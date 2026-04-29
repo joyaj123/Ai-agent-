@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AI Search Assistant · Informed & Adversarial Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 10% 20%, rgba(79, 70, 229, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .main-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 2rem;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .hero {
+            background: linear-gradient(112deg, #1e1b4b 0%, #312e81 100%);
+            padding: 2rem 2rem 1.8rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .hero h1 i {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 60px;
+            font-size: 1.5rem;
+        }
+
+        .hero .badge {
+            background: rgba(255, 255, 255, 0.15);
+            display: inline-block;
+            border-radius: 40px;
+            padding: 0.3rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.8rem;
+        }
+
+        .hero p {
+            margin-top: 0.8rem;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .content-panel {
+            padding: 2rem;
+        }
+
+        .search-form {
+            background: #f9fafc;
+            border-radius: 2rem;
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .search-form:focus-within {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            background: white;
+        }
+
+        .search-form i {
+            color: #94a3b8;
+            font-size: 1.2rem;
+            margin-left: 0.8rem;
+        }
+
+        .search-form input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 1rem 0.2rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            outline: none;
+            color: #0f172a;
+        }
+
+        .search-form input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .search-form button {
+            background: #4f46e5;
+            border: none;
+            padding: 0.75rem 1.6rem;
+            border-radius: 2rem;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-form button:hover {
+            background: #3730a3;
+            transform: scale(0.98);
+        }
+
+        .insight-tag {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .insight-tag span {
+            background: #ede9fe;
+            padding: 0.4rem 1.1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #4338ca;
+            cursor: pointer;
+            transition: 0.1s;
+            border: 1px solid #c7d2fe;
+        }
+
+        .insight-tag span:hover {
+            background: #c7d2fe;
+            transform: translateY(-1px);
+        }
+
+        .answer-section {
+            margin-top: 2rem;
+            background: #ffffff;
+            border-radius: 1.5rem;
+            border: 1px solid #eef2ff;
+            box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .answer-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .answer-header i {
+            font-size: 1.5rem;
+            color: #4f46e5;
+            background: #e0e7ff;
+            padding: 8px;
+            border-radius: 14px;
+        }
+
+        .answer-header h3 {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .answer-body {
+            padding: 1.5rem;
+            line-height: 1.6;
+            font-size: 1rem;
+            color: #1e293b;
+            background: white;
+        }
+
+        .answer-body p {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 1rem 1.5rem;
+            color: #4b5563;
+            font-weight: 500;
+            background: #fef9e3;
+            border-radius: 1rem;
+            margin-top: 1rem;
+        }
+
+        .loading i {
+            font-size: 1.2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer-note {
+            margin-top: 1.8rem;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1.5rem;
+        }
+
+        .placeholder-message {
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .placeholder-message i {
+            font-size: 2rem;
+            color: #cbd5e1;
+        }
+
+        .placeholder-message p {
+            margin-top: 8px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .content-panel {
+                padding: 1.2rem;
+            }
+            .hero h1 {
+                font-size: 1.4rem;
+            }
+            .search-form button {
+                padding: 0.6rem 1rem;
+            }
+            .insight-tag span {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <div class="hero">
+        <h1>
+            <i class="fas fa-robot"></i>
+            AI Search<span style="font-weight:400">|</span>Expert
+        </h1>
+        <div class="badge">
+            <i class="fas fa-database"></i> RAG · Llama 3.2 · Chroma Vector Store
+        </div>
+        <p>Ask anything about informed search, A*, Minimax, BFS/DFS, heuristic functions, and adversarial search algorithms</p>
+    </div>
+
+    <div class="content-panel">
+        <form method="POST" class="search-form" id="queryForm">
+            <i class="fas fa-search"></i>
+            <input type="text" name="question" id="questionInput" placeholder="e.g., Why is A* optimal while greedy best-first is not?" required autocomplete="off">
+            <button type="submit" id="submitBtn">
+                <i class="fas fa-paper-plane"></i> Ask
+            </button>
+        </form>
+
+        <!-- Updated chips with questions from your CSV data -->
+        <div class="insight-tag">
+            <span data-question="What is the difference between informed and uninformed search?"><i class="fas fa-brain"></i> Informed vs Uninformed</span>
+            <span data-question="Explain how A* algorithm works and why it is optimal"><i class="fas fa-star-of-life"></i> A* Algorithm</span>
+            <span data-question="What are the key differences between BFS and DFS?"><i class="fas fa-code-branch"></i> BFS vs DFS</span>
+            <span data-question="How does Minimax algorithm work with alpha-beta pruning?"><i class="fas fa-chess-queen"></i> Minimax & Pruning</span>
+            <span data-question="What is the difference between greedy best-first search and A*?"><i class="fas fa-chart-line"></i> Best-First vs A*</span>
+            <span data-question="What is a heuristic function and what does admissibility mean?"><i class="fas fa-chart-simple"></i> Heuristics</span>
+            <span data-question="Explain uniform-cost search and how it relates to Dijkstra's algorithm"><i class="fas fa-dollar-sign"></i> UCS</span>
+        </div>
+
+        <div id="loadingIndicator" style="display: none;" class="loading">
+            <i class="fas fa-circle-notch"></i> Searching knowledge base & generating response...
+        </div>
+
+        {% if answer %}
+        <div class="answer-section" id="answerBox">
+            <div class="answer-header">
+                <i class="fas fa-robot"></i>
+                <h3>AI Expert Response</h3>
+            </div>
+            <div class="answer-body">
+                <p>{{ answer }}</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="placeholder-message" id="answerPlaceholder">
+            <i class="fas fa-comment-dots"></i>
+            <p>Your answer will appear here — ask any question about AI search algorithms!</p>
+        </div>
+        {% endif %}
+
+        <div class="footer-note">
+            <i class="fas fa-book-open"></i> Knowledge base: 75+ reviews on A*, BFS, DFS, UCS, Minimax, Alpha-Beta Pruning & more
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const chips = document.querySelectorAll('.insight-tag span');
+        const questionInput = document.getElementById('questionInput');
+        const form = document.getElementById('queryForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingDiv = document.getElementById('loadingIndicator');
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                if (loadingDiv) loadingDiv.style.display = 'flex';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing';
+                }
+            } else {
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Ask';
+                }
+            }
+        }
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const questionVal = questionInput.value.trim();
+                if (!questionVal) {
+                    e.preventDefault();
+                    return;
+                }
+                setLoading(true);
+            });
+        }
+
+        chips.forEach(chip => {
+            chip.addEventListener('click', function() {
+                const questionText = this.getAttribute('data-question');
+                if (questionText && questionInput) {
+                    questionInput.value = questionText;
+                    questionInput.focus();
+                    questionInput.style.transition = '0.1s';
+                    questionInput.style.backgroundColor = '#f0f2ff';
+                    setTimeout(() => { questionInput.style.backgroundColor = ''; }, 200);
+                }
+            });
+        });
+
+        if (document.querySelector('.answer-section')) {
+            const answerElem = document.querySelector('.answer-section');
+            if (answerElem) {
+                setTimeout(() => {
+                    answerElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 150);
+            }
+        }
+    })();
+</script>
+</body>
+</html>
